@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string>
+#include<conio.h>
 using namespace std;
 
 #include "chatroom.h"
@@ -10,37 +11,119 @@ using namespace std;
 #include <WinSock2.h>
 #pragma comment(lib, "WS2_32.lib")
 
-#define SERVER_IP ""   //·şÎñÆ÷ipµØÖ·
-#define CHAT_PORT 666  //¶Ë¿Ú
+#define SERVER_IP ""   //æœåŠ¡å™¨ipåœ°å€
+#define CHAT_PORT 666  //ç«¯å£
 
-SOCKET serverSocket;   //ÍøÂçÌ×½Ó×Ö
-sockaddr_in sockAddr;  //ÍøÂçµØÖ·
+SOCKET serverSocket;   //ç½‘ç»œå¥—æ¥å­—
+sockaddr_in sockAddr;  //ç½‘ç»œåœ°å€
 
-HANDLE hMutex;         //»¥³âËø
+HANDLE hMutex;         //äº’æ–¥é”
 
-//ÅäÖÃÁÄÌìÊÒÍøÂçµØÖ·
+//é…ç½®èŠå¤©å®¤ç½‘ç»œåœ°å€
 
 int main(void)
 {
-	//1.³õÊ¼»¯ÍøÂç
+	//1.åˆå§‹åŒ–ç½‘ç»œ
 	init();
 
-	//2.Á¬½ÓÁÄÌìÊÒ·şÎñÆ÷
+	//2.è¿æ¥èŠå¤©å®¤æœåŠ¡å™¨
 	int ret;
 
-	//3.µÇÂ¼ÁÄÌìÊÒ
+	//3.ç™»å½•èŠå¤©å®¤
 	login();
 
-	//4.³õÊ¼»¯ÁÄÌì½çÃæ
+	//4.åˆå§‹åŒ–èŠå¤©ç•Œé¢
 	uiInit();
 
-	//5.´´½¨Ò»¸öĞÂÏß³Ì
+	
+	
+	//é˜¿è‡ª ä¸»ç¨‹åºé‡Œé¢ä»¥ä¸‹è¿™ä¸ªbool isHZå‡½æ•°ï¼š
 
-	//6.´´½¨»¥³âËø
+	bool isHz(char str[], int index) {
+		int i = 0;
+		while (i < index) {
+			if (str[i] > 0) {
+				i++;
+			}
+			else {
+				i += 2;
+			}
+		}
+	}
+	
+	if (i == index) {
+		return false;
+	}
+	else {
+		return true;
+	}
+	
+	//é˜¿è‡ª åœ¨Mainé‡Œé¢çš„massageéƒ¨åˆ†-ç¼–è¾‘æ¶ˆæ¯
+	while (1) {
+		char buff[1024]//ä¿å­˜ç”¨æˆ·è¾“å…¥çš„å­—ç¬¦ä¸²
+			memset(buff, 0, sizeof(buff));
 
-	//7.±à¼­ĞÅÏ¢¹¦ÄÜ
+		editPrint(0, '>');
 
-	//8.±à¼­É¾³ı¹¦ÄÜ
+		int len = 0;
+		while (1) {
+			if (_kbhit()) {
+				char c = getch();
+				if (c == '/r') { //æŒ‰ä¸‹äº†å›è½¦æŒ‰é”®
+					break;
+				}
+				else if (c == 8) {
+					if (len == 0) {
+						continue;
+					}
+					if (isHz(buff, len - 1)) {
+						editPrint(len + 1, "\b\b  \b\b");
+						buff[len - 1] = 0;
+						buff[len - 2] = 0;
+						len -= 2;
+					}
+					else {
+						editPrint(len + 1, "\b \b");
+						buff[len - 1] = 0;
+						len -= 1;
+					}
+					continue;
+				}
+				WaitForSingleObject(hMutex, INFINITE);
+
+				do {
+					printf("%c", c);
+					buff[len++] = c;
+
+
+				} while (_kbhit() && (c = getch()));
+				ReleaseMutex(hMutex);
+
+			}
+		}
+		if (len == 0) {
+			continue;
+
+		}
+		//æ¸…é™¤ç¼–è¾‘åŒºçš„ä¿¡æ¯
+		char buff2[1024];
+		sprintf_s(buff2, sizeof(buff2), "%s\n", line2);
+		editPrint(0, buff2);
+		//æŠŠç”¨æˆ·è‡ªå·±è¯´çš„è¯è¾“å‡º
+		sprintf_s(buff2, sizeof(buff2), "ã€LocalHost@%Sã€‘%s"ï¼ŒnickName, buff);
+		printMag(buff2);
+		//å‘é€ç¼–è¾‘å¥½çš„å­—ç¬¦ä¸²
+		send(serverSocket, buff, strlen(buff) + 1, 0);
+	}
+
+	
+	//5.åˆ›å»ºä¸€ä¸ªæ–°çº¿ç¨‹
+
+	//6.åˆ›å»ºäº’æ–¥é”
+
+	//7.ç¼–è¾‘ä¿¡æ¯åŠŸèƒ½
+
+	//8.ç¼–è¾‘åˆ é™¤åŠŸèƒ½
 
 	return 0;
 }
