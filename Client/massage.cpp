@@ -24,7 +24,6 @@ void editPrint(int col, const char* str)
 	print("%s", str);
 
 	ReleaseMutex(hMutex);
-
 }
 
 void editdelet()
